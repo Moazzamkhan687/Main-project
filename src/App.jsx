@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import './App.css';
-import Navbar from './components/commonpage/Navbar/navbar';
+import Navbar from './components/commonpage/Navbar/Navbar';
 import Footer from './components/commonpage/Footer/footer';
 import Homepage from './components/Pages/Homepage';
 import Aboutpage from './components/Pages/Aboutpage';
