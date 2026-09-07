@@ -25,6 +25,7 @@ export default function Navbar({
   const { t, i18n } = useTranslation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [activeMobileSubmenu, setActiveMobileSubmenu] = useState(null);
   const [activeProviderModal, setActiveProviderModal] = useState(null);
   const navRef = useRef(null);
 
@@ -62,6 +63,7 @@ export default function Navbar({
     setActiveProviderModal(modalKey);
     setActiveDropdown(null);
     setIsMobileMenuOpen(false);
+    setActiveMobileSubmenu(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -72,6 +74,10 @@ export default function Navbar({
 
   const handleToggle = (menuName) => {
     setActiveDropdown((prev) => (prev === menuName ? null : menuName));
+  };
+
+  const handleMobileSubmenuToggle = (menuName) => {
+    setActiveMobileSubmenu((prev) => (prev === menuName ? null : menuName));
   };
 
   const changeLanguage = (lang) => {
@@ -85,6 +91,7 @@ export default function Navbar({
     setCurrentPage(targetPage);
     setActiveDropdown(null);
     setIsMobileMenuOpen(false);
+    setActiveMobileSubmenu(null);
     window.scrollTo({ top: 0, behavior: "instant" });
   };
 
@@ -289,21 +296,97 @@ export default function Navbar({
           </div>
         </div>
 
-        {/* Mobile Dropdown Menu */}
+        {/* Mobile Dropdown Menu (Fully Responsive) */}
         {isMobileMenuOpen && (
-          <div className="md:hidden bg-neutral-950 border-t border-neutral-800 px-4 pt-3 pb-6 space-y-3">
+          <div className="md:hidden bg-neutral-950 border-t border-neutral-800 px-4 pt-3 pb-6 space-y-3 max-h-[85vh] overflow-y-auto">
             <button
               type="button"
               onClick={() => handlePageClick("home")}
-              className="w-full text-start block py-2 font-medium text-gray-200"
+              className={`w-full text-start block py-2 font-medium ${currentPage === "home" ? "text-[#c49746]" : "text-gray-200"}`}
             >
               {t("home") || "Home"}
             </button>
+
+            <button
+              type="button"
+              onClick={() => handlePageClick("about")}
+              className={`w-full text-start block py-2 font-medium ${currentPage === "about" ? "text-[#c49746]" : "text-gray-200"}`}
+            >
+              {t("about") || "About Us"}
+            </button>
+
+            {/* Mobile Services Accordion */}
+            <div>
+              <button
+                type="button"
+                onClick={() => handleMobileSubmenuToggle("services")}
+                className="w-full flex items-center justify-between py-2 font-medium text-gray-200"
+              >
+                <span>{t("services") || "Services"}</span>
+                <ChevronDown size={16} className={`transition-transform duration-200 ${activeMobileSubmenu === "services" ? "rotate-180" : ""}`} />
+              </button>
+              {activeMobileSubmenu === "services" && (
+                <div className="ps-4 space-y-1.5 py-1 border-s border-neutral-800 my-1">
+                  {serviceItems.map((item, index) => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={index}
+                        type="button"
+                        onClick={() => handlePageClick(item.target)}
+                        className="w-full flex items-center gap-2.5 py-2 text-sm text-gray-300 hover:text-[#c49746]"
+                      >
+                        <Icon size={16} className="text-[#c49746]" />
+                        <span>{item.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Providers Accordion */}
+            <div>
+              <button
+                type="button"
+                onClick={() => handleMobileSubmenuToggle("providers")}
+                className="w-full flex items-center justify-between py-2 font-medium text-gray-200"
+              >
+                <span>{t("providers") || "Providers"}</span>
+                <ChevronDown size={16} className={`transition-transform duration-200 ${activeMobileSubmenu === "providers" ? "rotate-180" : ""}`} />
+              </button>
+              {activeMobileSubmenu === "providers" && (
+                <div className="ps-4 space-y-1.5 py-1 border-s border-neutral-800 my-1">
+                  {providerItems.map((item, index) => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={index}
+                        type="button"
+                        onClick={() => handleOpenProviderModal(item.modalKey)}
+                        className="w-full flex items-center gap-2.5 py-2 text-sm text-gray-300 hover:text-[#c49746]"
+                      >
+                        <Icon size={16} className="text-[#c49746]" />
+                        <span>{item.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handlePageClick("contact")}
+              className={`w-full text-start block py-2 font-medium ${currentPage === "contact" ? "text-[#c49746]" : "text-gray-200"}`}
+            >
+              {t("contact") || "Contact"}
+            </button>
             
             {/* Mobile Language Selector */}
-            <div className="py-2 border-y border-neutral-800 flex items-center justify-between">
+            <div className="py-3 border-y border-neutral-800 flex items-center justify-between">
               <span className="text-sm text-gray-400">Language:</span>
-              <div className="flex gap-2">
+              <div className="flex gap-1.5 flex-wrap">
                 {languages.map((l) => (
                   <button
                     key={l.code}
@@ -317,20 +400,22 @@ export default function Navbar({
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => { setIsMobileMenuOpen(false); onSignUpClick(); }}
-              className="w-full py-2.5 rounded-lg border border-[#c49746] text-[#c49746] text-center font-semibold text-sm cursor-pointer"
-            >
-              {t("signUp") || "Sign Up"}
-            </button>
-            <button
-              type="button"
-              onClick={() => { setIsMobileMenuOpen(false); onLoginClick(); }}
-              className="w-full py-2.5 rounded-lg bg-gradient-to-r from-[#9c7736] via-[#c49746] to-[#e4b55e] text-black text-center font-semibold text-sm cursor-pointer"
-            >
-              {t("login") || "Login"}
-            </button>
+            <div className="pt-2 space-y-2">
+              <button
+                type="button"
+                onClick={() => { setIsMobileMenuOpen(false); onSignUpClick(); }}
+                className="w-full py-2.5 rounded-lg border border-[#c49746] text-[#c49746] text-center font-semibold text-sm cursor-pointer"
+              >
+                {t("signUp") || "Sign Up"}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setIsMobileMenuOpen(false); onLoginClick(); }}
+                className="w-full py-2.5 rounded-lg bg-gradient-to-r from-[#9c7736] via-[#c49746] to-[#e4b55e] text-black text-center font-semibold text-sm cursor-pointer"
+              >
+                {t("login") || "Login"}
+              </button>
+            </div>
           </div>
         )}
       </header>
@@ -338,11 +423,11 @@ export default function Navbar({
       <div style={{ height: "80px", width: "100%", flexShrink: 0 }} aria-hidden="true" />
 
       {/* ========================================================
-          PROVIDER MODALS (Exact Screenshots Cards)
+          PROVIDER MODALS (Responsive Cards)
       ======================================================== */}
       <AnimatePresence>
         {activeProviderModal && (
-          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -353,13 +438,13 @@ export default function Navbar({
               {/* 1. BECOME A DRIVER MODAL */}
               {activeProviderModal === 'driver' && (
                 <>
-                  <div className="bg-neutral-900 text-white py-6 px-8 text-center relative border-b border-neutral-800">
-                    <button type="button" onClick={handleCloseProviderModal} className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-xs font-bold text-amber-400 cursor-pointer"><ArrowLeft size={16} /> Back</button>
-                    <h3 className="text-2xl font-extrabold text-[#dfb56b]">Become a Driver</h3>
+                  <div className="bg-neutral-900 text-white py-5 px-4 sm:px-8 text-center relative border-b border-neutral-800">
+                    <button type="button" onClick={handleCloseProviderModal} className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-xs font-bold text-amber-400 cursor-pointer"><ArrowLeft size={16} /> Back</button>
+                    <h3 className="text-xl sm:text-2xl font-extrabold text-[#dfb56b]">Become a Driver</h3>
                     <p className="text-xs text-gray-400 mt-1">Register to drive with ALLOGO</p>
-                    <button type="button" onClick={handleCloseProviderModal} className="absolute right-6 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-neutral-800 text-gray-300 hover:text-white flex items-center justify-center cursor-pointer"><X size={18} /></button>
+                    <button type="button" onClick={handleCloseProviderModal} className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-neutral-800 text-gray-300 hover:text-white flex items-center justify-center cursor-pointer"><X size={18} /></button>
                   </div>
-                  <div className="p-6 sm:p-8 space-y-4 max-h-[75vh] overflow-y-auto text-xs">
+                  <div className="p-4 sm:p-8 space-y-4 max-h-[75vh] overflow-y-auto text-xs">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1"><label className="font-semibold text-gray-600">First Name</label><input type="text" placeholder="Enter first name" className="w-full p-3 rounded-xl border border-amber-200 outline-none" /></div>
                       <div className="space-y-1"><label className="font-semibold text-gray-600">Last Name</label><input type="text" placeholder="Enter last name" className="w-full p-3 rounded-xl border border-amber-200 outline-none" /></div>
@@ -386,13 +471,13 @@ export default function Navbar({
               {/* 2. BECOME A DELIVERY PROVIDER MODAL */}
               {activeProviderModal === 'delivery' && (
                 <>
-                  <div className="bg-neutral-900 text-white py-6 px-8 text-center relative border-b border-neutral-800">
-                    <button type="button" onClick={handleCloseProviderModal} className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-xs font-bold text-amber-400 cursor-pointer"><ArrowLeft size={16} /> Back</button>
-                    <h3 className="text-2xl font-extrabold text-[#dfb56b]">Become a Delivery Provider</h3>
+                  <div className="bg-neutral-900 text-white py-5 px-4 sm:px-8 text-center relative border-b border-neutral-800">
+                    <button type="button" onClick={handleCloseProviderModal} className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-xs font-bold text-amber-400 cursor-pointer"><ArrowLeft size={16} /> Back</button>
+                    <h3 className="text-xl sm:text-2xl font-extrabold text-[#dfb56b]">Become a Delivery Provider</h3>
                     <p className="text-xs text-gray-400 mt-1">Register to provide delivery services with ALLOGO</p>
-                    <button type="button" onClick={handleCloseProviderModal} className="absolute right-6 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-neutral-800 text-gray-300 hover:text-white flex items-center justify-center cursor-pointer"><X size={18} /></button>
+                    <button type="button" onClick={handleCloseProviderModal} className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-neutral-800 text-gray-300 hover:text-white flex items-center justify-center cursor-pointer"><X size={18} /></button>
                   </div>
-                  <div className="p-6 sm:p-8 space-y-4 max-h-[75vh] overflow-y-auto text-xs">
+                  <div className="p-4 sm:p-8 space-y-4 max-h-[75vh] overflow-y-auto text-xs">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1"><label className="font-semibold text-gray-600">First Name</label><input type="text" placeholder="Enter first name" className="w-full p-3 rounded-xl border border-amber-200 outline-none" /></div>
                       <div className="space-y-1"><label className="font-semibold text-gray-600">Last Name</label><input type="text" placeholder="Enter last name" className="w-full p-3 rounded-xl border border-amber-200 outline-none" /></div>
@@ -416,13 +501,13 @@ export default function Navbar({
               {/* 3. BECOME A ROADSIDE PROVIDER MODAL */}
               {activeProviderModal === 'roadside' && (
                 <>
-                  <div className="bg-neutral-900 text-white py-6 px-8 text-center relative border-b border-neutral-800">
-                    <button type="button" onClick={handleCloseProviderModal} className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-xs font-bold text-amber-400 cursor-pointer"><ArrowLeft size={16} /> Back</button>
-                    <h3 className="text-2xl font-extrabold text-[#dfb56b]">Become a Roadside Provider</h3>
+                  <div className="bg-neutral-900 text-white py-5 px-4 sm:px-8 text-center relative border-b border-neutral-800">
+                    <button type="button" onClick={handleCloseProviderModal} className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-xs font-bold text-amber-400 cursor-pointer"><ArrowLeft size={16} /> Back</button>
+                    <h3 className="text-xl sm:text-2xl font-extrabold text-[#dfb56b]">Become a Roadside Provider</h3>
                     <p className="text-xs text-gray-400 mt-1">Register as a mechanic, towing, battery, tire, or fuel assistance provider</p>
-                    <button type="button" onClick={handleCloseProviderModal} className="absolute right-6 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-neutral-800 text-gray-300 hover:text-white flex items-center justify-center cursor-pointer"><X size={18} /></button>
+                    <button type="button" onClick={handleCloseProviderModal} className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-neutral-800 text-gray-300 hover:text-white flex items-center justify-center cursor-pointer"><X size={18} /></button>
                   </div>
-                  <div className="p-6 sm:p-8 space-y-4 max-h-[75vh] overflow-y-auto text-xs">
+                  <div className="p-4 sm:p-8 space-y-4 max-h-[75vh] overflow-y-auto text-xs">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1"><label className="font-semibold text-gray-600">First Name</label><input type="text" placeholder="Enter first name" className="w-full p-3 rounded-xl border border-amber-200 outline-none" /></div>
                       <div className="space-y-1"><label className="font-semibold text-gray-600">Last Name</label><input type="text" placeholder="Enter last name" className="w-full p-3 rounded-xl border border-amber-200 outline-none" /></div>
@@ -445,13 +530,13 @@ export default function Navbar({
               {/* 4. LIST YOUR VEHICLE MODAL */}
               {activeProviderModal === 'vehicle' && (
                 <>
-                  <div className="bg-neutral-900 text-white py-6 px-8 text-center relative border-b border-neutral-800">
-                    <button type="button" onClick={handleCloseProviderModal} className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-xs font-bold text-amber-400 cursor-pointer"><ArrowLeft size={16} /> Back</button>
-                    <h3 className="text-2xl font-extrabold text-[#dfb56b]">List Your Vehicle</h3>
+                  <div className="bg-neutral-900 text-white py-5 px-4 sm:px-8 text-center relative border-b border-neutral-800">
+                    <button type="button" onClick={handleCloseProviderModal} className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-xs font-bold text-amber-400 cursor-pointer"><ArrowLeft size={16} /> Back</button>
+                    <h3 className="text-xl sm:text-2xl font-extrabold text-[#dfb56b]">List Your Vehicle</h3>
                     <p className="text-xs text-gray-400 mt-1">Rent your car, scooter, motorcycle, SUV, or truck on ALLOGO</p>
-                    <button type="button" onClick={handleCloseProviderModal} className="absolute right-6 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-neutral-800 text-gray-300 hover:text-white flex items-center justify-center cursor-pointer"><X size={18} /></button>
+                    <button type="button" onClick={handleCloseProviderModal} className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-neutral-800 text-gray-300 hover:text-white flex items-center justify-center cursor-pointer"><X size={18} /></button>
                   </div>
-                  <div className="p-6 sm:p-8 space-y-4 max-h-[75vh] overflow-y-auto text-xs">
+                  <div className="p-4 sm:p-8 space-y-4 max-h-[75vh] overflow-y-auto text-xs">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1"><label className="font-semibold text-gray-600">First Name</label><input type="text" placeholder="Enter first name" className="w-full p-3 rounded-xl border border-amber-200 outline-none" /></div>
                       <div className="space-y-1"><label className="font-semibold text-gray-600">Last Name</label><input type="text" placeholder="Enter last name" className="w-full p-3 rounded-xl border border-amber-200 outline-none" /></div>
@@ -479,13 +564,13 @@ export default function Navbar({
               {/* 5. LIST YOUR APARTMENT MODAL */}
               {activeProviderModal === 'apartment' && (
                 <>
-                  <div className="bg-neutral-900 text-white py-6 px-8 text-center relative border-b border-neutral-800">
-                    <button type="button" onClick={handleCloseProviderModal} className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-xs font-bold text-amber-400 cursor-pointer"><ArrowLeft size={16} /> Back</button>
-                    <h3 className="text-2xl font-extrabold text-[#dfb56b]">List Your Apartment</h3>
+                  <div className="bg-neutral-900 text-white py-5 px-4 sm:px-8 text-center relative border-b border-neutral-800">
+                    <button type="button" onClick={handleCloseProviderModal} className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-xs font-bold text-amber-400 cursor-pointer"><ArrowLeft size={16} /> Back</button>
+                    <h3 className="text-xl sm:text-2xl font-extrabold text-[#dfb56b]">List Your Apartment</h3>
                     <p className="text-xs text-gray-400 mt-1">Add your apartment and rent it on ALLOGO</p>
-                    <button type="button" onClick={handleCloseProviderModal} className="absolute right-6 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-neutral-800 text-gray-300 hover:text-white flex items-center justify-center cursor-pointer"><X size={18} /></button>
+                    <button type="button" onClick={handleCloseProviderModal} className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-neutral-800 text-gray-300 hover:text-white flex items-center justify-center cursor-pointer"><X size={18} /></button>
                   </div>
-                  <div className="p-6 sm:p-8 space-y-4 max-h-[75vh] overflow-y-auto text-xs">
+                  <div className="p-4 sm:p-8 space-y-4 max-h-[75vh] overflow-y-auto text-xs">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1"><label className="font-semibold text-gray-600">First Name</label><input type="text" placeholder="Enter first name" className="w-full p-3 rounded-xl border border-amber-200 outline-none" /></div>
                       <div className="space-y-1"><label className="font-semibold text-gray-600">Last Name</label><input type="text" placeholder="Enter last name" className="w-full p-3 rounded-xl border border-amber-200 outline-none" /></div>
